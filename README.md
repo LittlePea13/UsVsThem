@@ -1,7 +1,7 @@
 # UsVsThem
 Repository for the paper [Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions](https://arxiv.org/abs/2101.11956) that will be presented in EACL 2021.
 
-Code to train and test found in [src/](src/). References to local data have been removed. Trained and tested on an older version of pytorch lightning with some manual fixes for DDP and not provided here. Branch three_task includes the code to train and test the three-task MTL model using emotions and group identification.
+Code to train and test found in [src/](src/). References to local data have been removed. Trained and tested on an older version of pytorch lightning with some manual fixes for DDP and not provided here. Main includes the code to train and test the two-task MTL model using emotions or group identification and the STL model. Branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task) includes the code to train and test the three-task MTL model using emotions and group identification.
 
 The public version of the dataset is available at [data/](data/). To comply with  GDPR we provide the Us Vs. Them dataset with just the Reddit comment body and the labels. For more information about the dataset or the extra data included in the original one such as Reddit metadata or the news articles that prompted the comments please contact one of the authors.
 
