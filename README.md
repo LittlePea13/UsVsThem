@@ -1,11 +1,9 @@
 # UsVsThem
-Repository for the paper [Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions](https://arxiv.org/abs/2101.11956) that will be presented in EACL 2021.
+This is the repository for our publication [_Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions_](https://arxiv.org/abs/2101.11956), which will be presented at the upcoming EACL 2021 conference. 
 
-Code to train and test found in [src/](src/). References to local data have been removed. Trained and tested on an older version of pytorch lightning with some manual fixes for DDP and not provided here. Main includes the code to train and test the two-task MTL model using emotions or group identification and the STL model. Branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task) includes the code to train and test the three-task MTL model using emotions and group identification.
+Our Reddit dataset is made publicly available for the research community to be used. As a common courtesy your citation is very appreciated: 
 
-The public version of the dataset is available at [data/](data/). To comply with  GDPR we provide the Us Vs. Them dataset with just the Reddit comment body and the labels. For more information about the dataset or the extra data included in the original one such as Reddit metadata or the news articles that prompted the comments please contact one of the authors.
-
-Code and dataset are made publicly available for the research community to be used. As a common courtesy your citation is appreciated: Huguet Cabot, P. L., Abadi, D., Fischer, A., & Shutova, E. (2021). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. arXiv e-prints, arXiv-2101. 
+Huguet Cabot, P. L., Abadi, D., Fischer, A., & Shutova, E. (2021). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. arXiv e-prints, arXiv-2101. https://arxiv.org/abs/2101.11956
 
     @misc{huguetcabot2021vs,
           title={Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions}, 
@@ -19,5 +17,23 @@ Code and dataset are made publicly available for the research community to be us
           primaryClass={cs.CL}
     }
 
+## Code
 
-This research was funded by the H2020 project Democratic Efficacy and the Varieties of Populism in Europe (DEMOS) under H2020-EU.3.6.1.1. and H2020-EU.3.6.1.2. (grant agreement ID: [822590](https://cordis.europa.eu/project/id/822590)).
+The code to train and test the dataset can be found in [src/](src/).
+
+References to local data have been removed. 
+
+Our dataset was trained and tested on an older version of _pytorch lightning_ with some manual fixes for DDP (Distributed Data Parallel) and not provided here. 
+
+The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task) includes the code to train and test the three-task MTL model using emotions and group identification.
+
+## Data
+
+The public version of our Reddit dataset is available at [data/](data/). 
+
+To comply with GDPR laws we provide our _Us Vs. Them_ dataset only with the Reddit comment body and the labels. 
+
+For more information about the dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via GitHub. 
+
+## Funding statement
+This research was funded by the H2020 project _Democratic Efficacy and the Varieties of Populism in Europe_ (DEMOS) under H2020-EU.3.6.1.1. and H2020-EU.3.6.1.2. (grant agreement ID: [822590](https://cordis.europa.eu/project/id/822590)) and supported by the European Union’s H2020 Marie Skłodowska-Curie project _Knowledge Graphs at Scale_ (KnowGraphs) under H2020-EU.1.3.1. (grant agreement ID: [860801](https://cordis.europa.eu/project/id/860801)).
