@@ -34,7 +34,3 @@ python3 training_reg.py --gpus 4 --batch_size 64 --patience 10 --encoder_model r
 python3 testing.py --checkpoint_path path_to_model_checkpoint
 ```
 The code was based on Huggingface [Transformers](https://huggingface.co/transformers/index.html) and the[lightning-text-classification](https://github.com/ricardorei/lightning-text-classification) repository.
-
-## Dataset
-
-Due to GDPR we provide the Us Vs. Them dataset with just the Reddit comment body.
