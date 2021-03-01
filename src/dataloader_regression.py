@@ -27,6 +27,8 @@ class RedditDataset(Dataset):
             #self.comments.loc[self.comments[aux_task].isna(), aux_task] = 'Neutral'
             self.comments['label_aux'] = self.comments[['Anger','Contempt','Disgust','Fear','Hope','Pride','Sympathy','Emotions_Neutral']].values.tolist()
             self.columns = list(self.comments[['Anger','Contempt','Disgust','Fear','Hope','Pride','Sympathy','Emotions_Neutral']].columns)
+            le_aux.fit(self.comments['group'].values)
+            self.comments['label_group'] = le_aux.transform(self.comments['group'].values)
         else:
             le_aux.fit(self.comments[aux_task].values)
             self.comments['label_aux'] = le_aux.transform(self.comments[aux_task].values)
@@ -35,7 +37,7 @@ class RedditDataset(Dataset):
         return len(self.comments)
 
     def __getitem__(self, idx):
-        return self.comments.iloc[idx][['body', 'label_aux', 'group', 'bias', 'usVSthem_scale']]
+        return self.comments.iloc[idx][['body', 'label_aux', 'label_group', 'group', 'bias', 'usVSthem_scale']]
 
 
 def pad_seq(seq, max_batch_len, pad_value):
@@ -54,6 +56,7 @@ class MyCollator(object):
         tokenized = self.tokenizer(texts, padding='longest', truncation=True, max_length = self.max_length, return_tensors = 'pt', add_special_tokens = True)
         output['labels'] = torch.tensor([element['usVSthem_scale'] for element in batch], dtype=torch.float)
         output['labels_aux'] = torch.tensor([element['label_aux'] for element in batch], dtype=torch.float)
+        output['labels_group'] = torch.tensor([element['label_group'] for element in batch], dtype=torch.long)
         return tokenized.data, output
 
 

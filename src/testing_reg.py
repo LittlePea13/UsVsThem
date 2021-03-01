@@ -7,23 +7,10 @@ from bert_regressor import BERTClassifier
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from test_tube import HyperOptArgumentParser
-from  import setup_testube_logger
+from utils import setup_testube_logger
 from torchnlp.random import set_seed
 from pytorch_lightning.logging.neptune import NeptuneLogger
 
-
-'''import types
-
-def predict_proba(pipeline, X, pad_to_max_length=True):
-    """
-    Scikit / Keras interface to transformers' pipelines. This method will forward to __call__().
-    """
-    predictions = self(X=X, pad_to_max_length=pad_to_max_length)
-    if 'prob' in predictions[0]:
-        return [d['prob'] for d in predictions]
-    return 'predictions'
-
-pipeline.method = types.MethodType(predict_proba,pipeline)'''
 
 def main(hparams) -> None:
     """

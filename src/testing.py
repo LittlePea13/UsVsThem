@@ -11,20 +11,6 @@ from utils import setup_testube_logger
 from torchnlp.random import set_seed
 from pytorch_lightning.logging.neptune import NeptuneLogger
 
-
-'''import types
-
-def predict_proba(pipeline, X, pad_to_max_length=True):
-    """
-    Scikit / Keras interface to transformers' pipelines. This method will forward to __call__().
-    """
-    predictions = self(X=X, pad_to_max_length=pad_to_max_length)
-    if 'prob' in predictions[0]:
-        return [d['prob'] for d in predictions]
-    return 'predictions'
-
-pipeline.method = types.MethodType(predict_proba,pipeline)'''
-
 def main(hparams) -> None:
     """
     Main training routine specific for this project
@@ -38,7 +24,7 @@ def main(hparams) -> None:
     for checkpoint in os.listdir(hparams.checkpoint_path):
         if checkpoint.endswith(".ckpt"):
             model = BERTClassifier.load_from_checkpoint(os.path.join(hparams.checkpoint_path, checkpoint))
-    # ------------------------
+     # ------------------------
     # 2 INIT EARLY STOPPING
     # ------------------------
     # 3 INIT TRAINER

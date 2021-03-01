@@ -28,6 +28,8 @@ class RedditDataset(Dataset):
         if aux_task == 'emotions':
             self.comments['label_aux'] = self.comments[['Anger','Contempt','Disgust','Fear','Hope','Pride','Sympathy','Emotions_Neutral']].values.tolist()
             self.columns = list(self.comments[['Anger','Contempt','Disgust','Fear','Hope','Pride','Sympathy','Emotions_Neutral']].columns)
+            le_aux.fit(self.comments['group'].values)
+            self.comments['label_group'] = le_aux.transform(self.comments['group'].values)
         else:        
             le_aux.fit(self.comments[aux_task].values)
             self.comments['label_aux'] = le_aux.transform(self.comments[aux_task].values)
@@ -36,7 +38,7 @@ class RedditDataset(Dataset):
         return len(self.comments)
 
     def __getitem__(self, idx):
-        return self.comments.iloc[idx][['body','label', 'label_aux', 'group', 'bias']]
+        return self.comments.iloc[idx][['body','label', 'label_aux', 'label_group', 'group', 'bias']]
 
 
 def pad_seq(seq, max_batch_len, pad_value):
@@ -55,7 +57,9 @@ class MyCollator(object):
         tokenized = self.tokenizer(texts, padding='longest', truncation=True, max_length = self.max_length, return_tensors = 'pt', add_special_tokens = True)
         output['labels'] = torch.tensor([element['label'] for element in batch], dtype=torch.long)
         output['labels_aux'] = torch.tensor([element['label_aux'] for element in batch], dtype=torch.float)
+        output['labels_group'] = torch.tensor([element['label_group'] for element in batch], dtype=torch.long)
         return tokenized.data, output
+
 
 def sentiment_analysis_dataset(
     hparams: HyperOptArgumentParser, train=True, val=True, test=True

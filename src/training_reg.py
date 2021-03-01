@@ -21,7 +21,7 @@ def main(hparams) -> None:
     # 1 INIT LIGHTNING MODEL
     # ------------------------
     model = BERTClassifier(hparams)
-    #model = BERTClassifier.load_from_checkpoint('experiments/Reddit/version_SAN-265/_ckpt_epoch_10.ckpt')
+
     # ------------------------
     # 2 INIT EARLY STOPPING
     # ------------------------

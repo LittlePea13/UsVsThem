@@ -22,6 +22,7 @@ from sklearn.preprocessing import LabelEncoder
 from scipy import stats
 import argparse
 from sklearn.utils import class_weight
+import os
 class BERTClassifier(pl.LightningModule):
     """
     Sample model to show how to use BERT to classify sentences.
@@ -72,8 +73,9 @@ class BERTClassifier(pl.LightningModule):
             self.weights = nn.Parameter(torch.Tensor([1 + self.hparams.loss_aux, 1 - self.hparams.loss_aux]), requires_grad=True)
             self.alpha = 0.5
         elif self.hparams.aux_task == 'emotions':
-            self.model = RedditTransformer(self.hparams.encoder_model, len(self.hparams.le.classes_), self.hparams.extra_dropout, 8)
-            self.weights = nn.Parameter(torch.Tensor([1 + self.hparams.loss_aux, 1 - self.hparams.loss_aux]), requires_grad=True)
+            self.hparams.le_aux.fit(comments['group'].values)
+            self.model = RedditTransformer(self.hparams.encoder_model, len(self.hparams.le.classes_), self.hparams.extra_dropout, 8, len(self.hparams.le_aux.classes_))
+            self.weights = nn.Parameter(torch.Tensor([1 + self.hparams.loss_aux + self.hparams.loss_aux_group, 1 - self.hparams.loss_aux, 1 - self.hparams.loss_aux_group]), requires_grad=True)
             self.alpha = 0.5
         else:
             self.hparams.le_aux = LabelEncoder()
@@ -85,6 +87,7 @@ class BERTClassifier(pl.LightningModule):
         self._loss = nn.CrossEntropyLoss()
         if self.hparams.aux_task == 'emotions':
             self._loss_aux = nn.BCEWithLogitsLoss()
+            self._loss_aux_group = nn.CrossEntropyLoss()
         else:    
             self._loss_aux = nn.CrossEntropyLoss()
         self._Gradloss = nn.L1Loss()
@@ -139,9 +142,9 @@ class BERTClassifier(pl.LightningModule):
         # print('forward', tokens['input_ids'].shape)
         # print('tree_sizes', tokens['tree_sizes'])
         # print('node_order', tokens['node_order'])
-        logits, logits_aux, _ = self.model(tokens)
+        logits, logits_aux, logits_group, _ = self.model(tokens)
 
-        return {"logits": logits, "logits_aux": logits_aux}
+        return {"logits": logits, "logits_aux": logits_aux, "logits_group": logits_group}
 
     def loss(self, predictions: dict, targets: dict) -> torch.tensor:
         """
@@ -158,11 +161,12 @@ class BERTClassifier(pl.LightningModule):
         loss = self._loss(predictions["logits"], targets["labels"])
         if (self.hparams.aux_task != 'None') & (self.hparams.aux_task == 'emotions'):
             loss_aux = self._loss_aux(predictions["logits_aux"], targets["labels_aux"])
-            return loss, loss_aux#*self.hparams.loss_aux
+            loss_aux_group = self._loss_aux_group(predictions["logits_group"], targets["labels_group"])
+            return loss, loss_aux, loss_aux_group#*self.hparams.loss_aux
         elif (self.hparams.aux_task != 'None'):
             loss_aux = self._loss_aux(predictions["logits_aux"], targets["labels_aux"].type(torch.long))
-            return loss, loss_aux  
-        return loss, None
+            return loss, loss_aux, _
+        return loss, None, _
 
     def backward(self, use_amp, loss, optimizer, idx_opt):
         if self.hparams.aux_task != 'None' and self.hparams.gradnorm == True:
@@ -209,7 +213,7 @@ class BERTClassifier(pl.LightningModule):
         if self.hparams.aux_task != 'None':
             with torch.no_grad():
                 if epoch > self.hparams.warmup_aux:
-                    self.weights.data = nn.Parameter(torch.Tensor([1.99, 0.01]), requires_grad=True).to(self.weights.device)
+                    self.weights.data = nn.Parameter(torch.Tensor([1.99999, 0.00001, 0.00001]), requires_grad=True).to(self.weights.device)
                 normalize_coeff = len(self.weights) / self.weights.sum()
                 self.weights.data = self.weights.data * normalize_coeff
         # clear gradients
@@ -253,7 +257,7 @@ class BERTClassifier(pl.LightningModule):
             task_losses = task_losses.unsqueeze(0)
 
         if self.hparams.aux_task != 'None':
-            tqdm_dict = {"train_loss": total_weighted_loss, "train_acc": val_acc, "weight1": self.weights[0], "weight2": self.weights[1]}
+            tqdm_dict = {"train_loss": total_weighted_loss, "train_acc": val_acc, "weight1": self.weights[0], "weight2": self.weights[1], "weight3": self.weights[2]}
         else:
             tqdm_dict = {"train_loss": total_weighted_loss, "train_acc": val_acc}
         output = OrderedDict(
@@ -291,22 +295,29 @@ class BERTClassifier(pl.LightningModule):
             val_acc_aux = torch.tensor(val_acc_aux)
         elif self.hparams.aux_task == 'emotions':
             y_aux = targets["labels_aux"]
+            y_group = targets["labels_group"]
             y_hat_aux = model_out["logits_aux"]
+            y_hat_group = model_out["logits_group"]
+            labels_hat_group = torch.argmax(y_hat_group, dim=1)
             labels_hat_aux = (nn.Sigmoid()(y_hat_aux) > 0.5)
             val_acc_aux = jaccard_score(y_aux.cpu(),labels_hat_aux.cpu(), average='macro')
             val_acc_aux = torch.tensor(val_acc_aux)
+            val_acc_aux_group = torch.sum(y_group == labels_hat_group).item() / (len(y) * 1.0)
+            val_acc_aux_group = torch.tensor(val_acc_aux_group)
         else:
             val_acc_aux = torch.tensor(0, dtype = torch.float)
 
         if self.on_gpu:
             val_acc = val_acc.cuda(loss_val.device.index)
             val_acc_aux = val_acc_aux.cuda(loss_val.device.index)
+            val_acc_aux_group = val_acc_aux_group.cuda(val_acc_aux_group.device.index)
 
         # in DP mode (default) make sure if result is scalar, there's another dim in the beginning
         if self.trainer.use_dp or self.trainer.use_ddp2:
             loss_val = loss_val.unsqueeze(0)
             val_acc = val_acc.unsqueeze(0)
             val_acc_aux = val_acc_aux.unsqueeze(0)
+            val_acc_aux_group = val_acc_aux_group.unsqueeze(0)
         conf_matrix = confusion_matrix(self.hparams.le.inverse_transform(y.cpu().numpy()),self.hparams.le.inverse_transform(labels_hat.cpu().numpy()), labels=self.hparams.le.classes_)
         conf_matrix = torch.tensor(conf_matrix, device = loss_val.device.index)
         if (self.hparams.aux_task != 'None') & (self.hparams.aux_task != 'emotions'):
@@ -315,9 +326,11 @@ class BERTClassifier(pl.LightningModule):
         elif self.hparams.aux_task == 'emotions':
             conf_matrix_aux = confusion_matrix(y_aux.cpu().numpy().argmax(axis=1), labels_hat_aux.cpu().numpy().argmax(axis=1), labels = np.arange(len(self._dev_dataset.columns)))
             conf_matrix_aux = torch.tensor(conf_matrix_aux, device = loss_val.device.index)
+            conf_matrix_aux_group = confusion_matrix(self.hparams.le_aux.inverse_transform(y_group.type(torch.long).cpu().numpy()),self.hparams.le_aux.inverse_transform(labels_hat_group.cpu().numpy()), labels=self.hparams.le_aux.classes_)
+            conf_matrix_aux_group = torch.tensor(conf_matrix_aux_group, device = loss_val.device.index)
         else:
             conf_matrix_aux = torch.zeros([1,1], device = loss_val.device.index)
-        output = OrderedDict({"val_loss": loss_val, "val_acc": val_acc, "conf_matrix": conf_matrix, "conf_matrix_aux": conf_matrix_aux, "val_acc_aux": val_acc_aux})
+        output = OrderedDict({"val_loss": loss_val, "val_acc": val_acc, "conf_matrix": conf_matrix, "conf_matrix_aux": conf_matrix_aux, "val_acc_aux": val_acc_aux, "conf_matrix_aux_group": conf_matrix_aux_group, 'val_acc_group': val_acc_aux_group})
 
         # can also return just a scalar instead of a dict (return loss_val)
         return output
@@ -333,13 +346,18 @@ class BERTClassifier(pl.LightningModule):
 
         y = targets["labels"]
         y_hat = model_out["logits"]
-
+        # ckpt_path = os.path.join(
+        #     "experiments/",
+        #     self.logger.name,
+        #     f"version_{self.logger.version}",
+        #     "checkpoints",
+        # )
         # acc
         labels_hat = torch.argmax(y_hat, dim=1)
         val_acc = torch.sum(y == labels_hat).item() / (len(y) * 1.0)
         val_acc = torch.tensor(val_acc)
 
-        with open('experiments/predictions/' + str(self.hparams.seed) + '_' + self.hparams.aux_task + '_preds.csv','a') as fd:
+        with open(self.hparams.checkpoint_path+'/preds.csv','a') as fd:
             for line in zip(labels_hat.tolist(), y.tolist()):
                 fd.write(','.join(str(v) for v in line))
                 fd.write('\n')
@@ -355,22 +373,29 @@ class BERTClassifier(pl.LightningModule):
             val_acc_aux = torch.tensor(val_acc_aux)
         elif self.hparams.aux_task == 'emotions':
             y_aux = targets["labels_aux"]
+            y_group = targets["labels_group"]
             y_hat_aux = model_out["logits_aux"]
+            y_hat_group = model_out["logits_group"]
+            labels_hat_group = torch.argmax(y_hat_group, dim=1)
             labels_hat_aux = (nn.Sigmoid()(y_hat_aux) > 0.5)
             val_acc_aux = jaccard_score(y_aux.cpu(),labels_hat_aux.cpu(), average='macro')
             val_acc_aux = torch.tensor(val_acc_aux)
+            val_acc_aux_group = torch.sum(y_group == labels_hat_group).item() / (len(y) * 1.0)
+            val_acc_aux_group = torch.tensor(val_acc_aux_group)
         else:
             val_acc_aux = torch.tensor(0, dtype = torch.float)
 
         if self.on_gpu:
             val_acc = val_acc.cuda(loss_val.device.index)
             val_acc_aux = val_acc_aux.cuda(loss_val.device.index)
+            val_acc_aux_group = val_acc_aux_group.cuda(val_acc_aux_group.device.index)
 
         # in DP mode (default) make sure if result is scalar, there's another dim in the beginning
         if self.trainer.use_dp or self.trainer.use_ddp2:
             loss_val = loss_val.unsqueeze(0)
             val_acc = val_acc.unsqueeze(0)
             val_acc_aux = val_acc_aux.unsqueeze(0)
+            val_acc_aux_group = val_acc_aux_group.unsqueeze(0)
         conf_matrix = confusion_matrix(self.hparams.le.inverse_transform(y.cpu().numpy()),self.hparams.le.inverse_transform(labels_hat.cpu().numpy()), labels=self.hparams.le.classes_)
         conf_matrix = torch.tensor(conf_matrix, device = loss_val.device.index)
         if (self.hparams.aux_task != 'None') & (self.hparams.aux_task != 'emotions'):
@@ -379,9 +404,11 @@ class BERTClassifier(pl.LightningModule):
         elif self.hparams.aux_task == 'emotions':
             conf_matrix_aux = confusion_matrix(y_aux.cpu().numpy().argmax(axis=1), labels_hat_aux.cpu().numpy().argmax(axis=1), labels = np.arange(len(self._test_dataset.columns)))
             conf_matrix_aux = torch.tensor(conf_matrix_aux, device = loss_val.device.index)
+            conf_matrix_aux_group = confusion_matrix(self.hparams.le_aux.inverse_transform(y_group.type(torch.long).cpu().numpy()),self.hparams.le_aux.inverse_transform(labels_hat_group.cpu().numpy()), labels=self.hparams.le_aux.classes_)
+            conf_matrix_aux_group = torch.tensor(conf_matrix_aux_group, device = loss_val.device.index)
         else:
             conf_matrix_aux = torch.zeros([1,1], device = loss_val.device.index)
-        output = OrderedDict({"val_loss": loss_val, "val_acc": val_acc, "conf_matrix": conf_matrix, "conf_matrix_aux": conf_matrix_aux, "val_acc_aux": val_acc_aux})
+        output = OrderedDict({"val_loss": loss_val, "val_acc": val_acc, "conf_matrix": conf_matrix, "conf_matrix_aux": conf_matrix_aux, "val_acc_aux": val_acc_aux, "conf_matrix_aux_group": conf_matrix_aux_group, 'val_acc_group': val_acc_aux_group})
 
         # can also return just a scalar instead of a dict (return loss_val)
         return output
@@ -465,24 +492,30 @@ class BERTClassifier(pl.LightningModule):
         """
         val_loss_mean = 0
         val_acc_mean = 0
+        val_acc_group_mean = 0
         val_acc_aux_mean = 0
         conf_matrix = torch.zeros(int(outputs[0]["conf_matrix"].shape[0]/self.hparams.gpus),outputs[0]["conf_matrix"].shape[1], device = outputs[0]["conf_matrix"].device)
         conf_matrix_aux = torch.zeros(int(outputs[0]["conf_matrix_aux"].shape[0]/self.hparams.gpus),outputs[0]["conf_matrix_aux"].shape[1], device = outputs[0]["conf_matrix_aux"].device)
+        conf_matrix_aux_group = torch.zeros(int(outputs[0]["conf_matrix_aux_group"].shape[0]/self.hparams.gpus),outputs[0]["conf_matrix_aux_group"].shape[1], device = outputs[0]["conf_matrix_aux_group"].device)
+
         for output in outputs:
             val_loss = output["val_loss"]
             val_acc_aux = output["val_acc_aux"]
+            val_acc_group = output["val_acc_group"]
             conf_matrix_ = output["conf_matrix"]
             conf_matrix_aux_ = output["conf_matrix_aux"]
+            conf_matrix_aux_group_ = output["conf_matrix_aux_group"]
             # reduce manually when using dp
             if self.trainer.use_dp or self.trainer.use_ddp2:
                 conf_matrix_ = sum(torch.split(conf_matrix_, int(conf_matrix_.shape[0]/self.hparams.gpus)))
                 conf_matrix_aux_ = sum(torch.split(conf_matrix_aux_, int(conf_matrix_aux_.shape[0]/self.hparams.gpus)))
+                conf_matrix_aux_group_ = sum(torch.split(conf_matrix_aux_group_, int(conf_matrix_aux_group_.shape[0]/self.hparams.gpus)))
                 val_loss = torch.mean(val_loss)
                 val_acc_aux = torch.mean(val_acc_aux)
+                val_acc_group = torch.mean(val_acc_group)
             val_loss_mean += val_loss
             val_acc_aux_mean += val_acc_aux
-
-
+            val_acc_group_mean += val_acc_group
             # reduce manually when using dp
             val_acc = output["val_acc"]
             if self.trainer.use_dp or self.trainer.use_ddp2:
@@ -491,14 +524,18 @@ class BERTClassifier(pl.LightningModule):
             val_acc_mean += val_acc
             conf_matrix += conf_matrix_
             conf_matrix_aux += conf_matrix_aux_
+            conf_matrix_aux_group += conf_matrix_aux_group_
+
 
         val_loss_mean /= len(outputs)
         val_acc_mean /= len(outputs)
         val_acc_aux_mean /= len(outputs)
+        val_acc_group_mean /= len(outputs)
+
         tqdm_dict = {"val_loss": val_loss_mean, 
             "val_acc": val_acc_mean,
-            "val_acc_aux": val_acc_aux_mean
-
+            "val_acc_aux": val_acc_aux_mean,
+            "val_acc_group": val_acc_group_mean
         }
         #log_dict = {"val_loss": val_loss_mean, "val_acc": val_acc_mean, "conf_matrix": conf_matrix}
         fig = plt.figure(figsize = (10,7))
@@ -533,6 +570,16 @@ class BERTClassifier(pl.LightningModule):
             ax.xaxis.set_ticklabels(self._dev_dataset.columns)
             ax.yaxis.set_ticklabels(self._dev_dataset.columns)
             self.logger.experiment.log_image('confusion matrix Aux', fig)
+            fig = plt.figure(figsize = (10,7))
+            ax = plt.axes()
+            sn.heatmap(conf_matrix_aux_group.cpu(), annot=True, ax = ax)
+            # labels, title and ticks
+            ax.set_xlabel('Predicted labels')
+            ax.set_ylabel('True labels')
+            ax.set_title('Confusion Matrix')
+            ax.xaxis.set_ticklabels(self.hparams.le_aux.classes_) 
+            ax.yaxis.set_ticklabels(self.hparams.le_aux.classes_)
+            self.logger.experiment.log_image('confusion matrix Group', fig)
         plt.close('all')
         result = {
             "progress_bar": tqdm_dict,
@@ -540,6 +587,7 @@ class BERTClassifier(pl.LightningModule):
             "val_loss": val_loss_mean,
             "val_acc": val_acc_mean,
             "val_acc_aux": val_acc_aux_mean,
+            "val_acc_group": val_acc_group_mean,
         }
         return result
     def test_epoch_end(self, outputs: list) -> dict:
@@ -551,25 +599,30 @@ class BERTClassifier(pl.LightningModule):
         """
         val_loss_mean = 0
         val_acc_mean = 0
+        val_acc_group_mean = 0
         val_acc_aux_mean = 0
         conf_matrix = torch.zeros(int(outputs[0]["conf_matrix"].shape[0]),outputs[0]["conf_matrix"].shape[1], device = outputs[0]["conf_matrix"].device)
         conf_matrix_aux = torch.zeros(int(outputs[0]["conf_matrix_aux"].shape[0]),outputs[0]["conf_matrix_aux"].shape[1], device = outputs[0]["conf_matrix_aux"].device)
+        conf_matrix_aux_group = torch.zeros(int(outputs[0]["conf_matrix_aux_group"].shape[0]),outputs[0]["conf_matrix_aux_group"].shape[1], device = outputs[0]["conf_matrix_aux_group"].device)
+
         for output in outputs:
             val_loss = output["val_loss"]
             val_acc_aux = output["val_acc_aux"]
+            val_acc_group = output["val_acc_group"]
             conf_matrix_ = output["conf_matrix"]
             conf_matrix_aux_ = output["conf_matrix_aux"]
+            conf_matrix_aux_group_ = output["conf_matrix_aux_group"]
             # reduce manually when using dp
             if self.trainer.use_dp or self.trainer.use_ddp2:
-                # conf_matrix_ = sum(torch.split(conf_matrix_, int(conf_matrix_.shape[0]/self.hparams.gpus)))
-                # if self.hparams.aux_task != 'None':
-                #     conf_matrix_aux_ = sum(torch.split(conf_matrix_aux_, int(conf_matrix_aux_.shape[0]/self.hparams.gpus)))
+                #conf_matrix_ = sum(torch.split(conf_matrix_, int(conf_matrix_.shape[0]/self.hparams.gpus)))
+                #conf_matrix_aux_ = sum(torch.split(conf_matrix_aux_, int(conf_matrix_aux_.shape[0]/self.hparams.gpus)))
+                #conf_matrix_aux_group_ = sum(torch.split(conf_matrix_aux_group_, int(conf_matrix_aux_group_.shape[0]/self.hparams.gpus)))
                 val_loss = torch.mean(val_loss)
                 val_acc_aux = torch.mean(val_acc_aux)
+                val_acc_group = torch.mean(val_acc_group)
             val_loss_mean += val_loss
             val_acc_aux_mean += val_acc_aux
-
-
+            val_acc_group_mean += val_acc_group
             # reduce manually when using dp
             val_acc = output["val_acc"]
             if self.trainer.use_dp or self.trainer.use_ddp2:
@@ -578,14 +631,18 @@ class BERTClassifier(pl.LightningModule):
             val_acc_mean += val_acc
             conf_matrix += conf_matrix_
             conf_matrix_aux += conf_matrix_aux_
+            conf_matrix_aux_group += conf_matrix_aux_group_
+
 
         val_loss_mean /= len(outputs)
         val_acc_mean /= len(outputs)
         val_acc_aux_mean /= len(outputs)
-        tqdm_dict = {"val_loss": val_loss_mean, 
-            "val_acc": val_acc_mean,
-            "val_acc_aux": val_acc_aux_mean
+        val_acc_group_mean /= len(outputs)
 
+        tqdm_dict = {"test_loss": val_loss_mean, 
+            "test_acc": val_acc_mean,
+            "test_acc_aux": val_acc_aux_mean,
+            "test_acc_group": val_acc_group_mean
         }
         #log_dict = {"val_loss": val_loss_mean, "val_acc": val_acc_mean, "conf_matrix": conf_matrix}
         fig = plt.figure(figsize = (10,7))
@@ -597,7 +654,7 @@ class BERTClassifier(pl.LightningModule):
         ax.set_title('Confusion Matrix')
         ax.xaxis.set_ticklabels(self.hparams.le.classes_) 
         ax.yaxis.set_ticklabels(self.hparams.le.classes_)
-        self.logger.experiment.log_image('confusion matrix', fig)
+        #self.logger.experiment.log_image('confusion matrix', fig)
         if (self.hparams.aux_task != 'None') & (self.hparams.aux_task != 'emotions'):
             fig = plt.figure(figsize = (10,7))
             ax = plt.axes()
@@ -608,7 +665,7 @@ class BERTClassifier(pl.LightningModule):
             ax.set_title('Confusion Matrix')
             ax.xaxis.set_ticklabels(self.hparams.le_aux.classes_) 
             ax.yaxis.set_ticklabels(self.hparams.le_aux.classes_)
-            self.logger.experiment.log_image('confusion matrix Aux', fig)
+            #self.logger.experiment.log_image('confusion matrix Aux', fig)
         elif self.hparams.aux_task == 'emotions':
             fig = plt.figure(figsize = (10,7))
             ax = plt.axes()
@@ -619,15 +676,25 @@ class BERTClassifier(pl.LightningModule):
             ax.set_title('Confusion Matrix')
             ax.xaxis.set_ticklabels(self._test_dataset.columns)
             ax.yaxis.set_ticklabels(self._test_dataset.columns)
-            self.logger.experiment.log_image('confusion matrix Aux', fig)
+            #self.logger.experiment.log_image('confusion matrix Aux', fig)
+            fig = plt.figure(figsize = (10,7))
+            ax = plt.axes()
+            sn.heatmap(conf_matrix_aux_group.cpu(), annot=True, ax = ax)
+            # labels, title and ticks
+            ax.set_xlabel('Predicted labels')
+            ax.set_ylabel('True labels')
+            ax.set_title('Confusion Matrix')
+            ax.xaxis.set_ticklabels(self.hparams.le_aux.classes_) 
+            ax.yaxis.set_ticklabels(self.hparams.le_aux.classes_)
+            #self.logger.experiment.log_image('confusion matrix Group', fig)
         plt.close('all')
         result = {
             "progress_bar": tqdm_dict,
             "log": tqdm_dict,
-            "val_loss": val_loss_mean,
-            "val_acc": val_acc_mean,
-            #"conf_matrix": conf_matrix,
-            "val_acc_aux": val_acc_aux_mean,
+            "test_loss": val_loss_mean,
+            "test_acc": val_acc_mean,
+            "test_acc_aux": val_acc_aux_mean,
+            "test_acc_group": val_acc_group_mean,
         }
         return result
     def configure_optimizers(self):
@@ -638,7 +705,7 @@ class BERTClassifier(pl.LightningModule):
             params=[]
             aux_params = []
             for n,p in self.model.named_parameters():
-                if any(nd in n for nd in ['classification_head_aux','pooler.dense_right','layer_right']):
+                if any(nd in n for nd in ['classification_head_aux','pooler.dense_right','layer_right', 'classification_head_group','pooler.dense_center','layer_center']):
                     aux_params.append(p)
                 else:
                     params.append(p)
@@ -746,7 +813,15 @@ class BERTClassifier(pl.LightningModule):
             "--loss_aux",
             default=0.25,
             tunable=True,
-            options=[0.1, 0.5, 0.75, 0.99],
+            options=[0.1, 0.25, 0.85, 0.95],
+            type=float,
+            help="Add dropout to Transformer.",
+        )
+        parser.opt_list(
+            "--loss_aux_group",
+            default=0.25,
+            tunable=True,
+            options=[0.1, 0.25, 0.85, 0.95],
             type=float,
             help="Add dropout to Transformer.",
         )
@@ -754,7 +829,7 @@ class BERTClassifier(pl.LightningModule):
             "--warmup_aux",
             default=5,
             tunable=True,
-            options=[1,3,5,8,10],
+            options=[3,5,8,10],
             type=int,
             help="Add warmup scheduled learning.",
         )

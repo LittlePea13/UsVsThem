@@ -185,7 +185,7 @@ if __name__ == "__main__":
         # RUN TRAINING
         # ---------------------
         # run 20 trials of random search over the hyperparams
-        for hparam_trial in hparams.trials(9):
+        for hparam_trial in hparams.trials(20):
             print(hparam_trial)
             main(hparam_trial)
         #main(hparams)
