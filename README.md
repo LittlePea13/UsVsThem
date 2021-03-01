@@ -20,4 +20,4 @@ Code and dataset are made publicly available for the research community to be us
     }
 
 
-This research was funded by the H2020 project Democratic Efficacy and the Varieties of Populism in Europe (DEMOS) under H2020-EU.3.6.1.1. and H2020-EU.3.6.1.2. (grant agreement ID: 822590).
+This research was funded by the H2020 project Democratic Efficacy and the Varieties of Populism in Europe (DEMOS) under H2020-EU.3.6.1.1. and H2020-EU.3.6.1.2. (grant agreement ID: [822590](https://cordis.europa.eu/project/id/822590)).
