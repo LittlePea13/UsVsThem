@@ -33,7 +33,7 @@ The public version of our Reddit dataset is available on request. For this purpo
 
 To comply with GDPR laws we provide our _Us Vs. Them_ dataset only with the Reddit comment body and the labels. 
 
-For more information about the dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via GitHub. 
+For more information about the dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via email. 
 
 ## Funding statement
 This research was funded by the H2020 project _Democratic Efficacy and the Varieties of Populism in Europe_ (DEMOS) under H2020-EU.3.6.1.1. and H2020-EU.3.6.1.2. (grant agreement ID: [822590](https://cordis.europa.eu/project/id/822590)) and supported by the European Union’s H2020 Marie Skłodowska-Curie project _Knowledge Graphs at Scale_ (KnowGraphs) under H2020-EU.1.3.1. (grant agreement ID: [860801](https://cordis.europa.eu/project/id/860801)).
