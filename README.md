@@ -29,7 +29,7 @@ The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task)
 
 ## Data
 
-The public version of our Reddit dataset is available at [data/](data/). 
+The public version of our Reddit dataset is available on request. For this purpose, please contact David Abadi (https://www.uva.nl/en/profile/a/b/d.r.abadi/d.r.abadi.html) (Department of Psychology, University of Amsterdam).
 
 To comply with GDPR laws we provide our _Us Vs. Them_ dataset only with the Reddit comment body and the labels. 
 
