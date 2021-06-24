@@ -1,7 +1,7 @@
 # UsVsThem
 This is the repository for our publication [_Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions_](https://www.aclweb.org/anthology/2021.eacl-main.165/), which was recently published and presented at the EACL 2021 conference. Our Reddit dataset is made publicly available for the research community to be used. As a common courtesy your citation is very appreciated:
 
-Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume (pp 1921–1945). https://www.aclweb.org/anthology/2021.eacl-main.165/
+Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In _Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume_ (pp 1921–1945). https://www.aclweb.org/anthology/2021.eacl-main.165/
 
     @inproceedings{huguet-cabot-etal-2021-us,
     title = "Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions",
