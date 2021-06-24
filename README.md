@@ -3,16 +3,19 @@ This is the repository for our publication [_Us vs. Them: A Dataset of Populist 
 
 Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume (pp 1921–1945). https://www.aclweb.org/anthology/2021.eacl-main.165/
 
-    @misc{huguetcabot2021vs,
-          title={Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions}, 
-          author={Huguet Cabot, Pere-Llu{\'\i}s  and
-          Abadi, David  and
-          Fischer, Agneta  and
-          Shutova, Ekaterina},
-          year={2021},
-          eprint={2101.11956},
-          archivePrefix={arXiv},
-          primaryClass={cs.CL}
+    @inproceedings{huguet-cabot-etal-2021-us,
+    title = "Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions",
+    author = "Huguet Cabot, Pere-Llu{\'\i}s  and
+      Abadi, David  and
+      Fischer, Agneta  and
+      Shutova, Ekaterina",
+    booktitle = "Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume",
+    month = apr,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2021.eacl-main.165",
+    pages = "1921--1945"
     }
 
 ## Code
