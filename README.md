@@ -30,11 +30,11 @@ The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task)
 
 ## Data
 
-The public version of our Reddit dataset is available on request. For this purpose, please contact [David Abadi](https://www.uva.nl/en/profile/a/b/d.r.abadi/d.r.abadi.html) (Department of Psychology, University of Amsterdam).
+To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with the Reddit comment body and the labels. 
 
-To comply with GDPR laws we provide our _Us Vs. Them_ dataset only with the Reddit comment body and the labels. 
+The public version of our Reddit dataset is available on request only. For this purpose, please contact [David Abadi](https://www.uva.nl/en/profile/a/b/d.r.abadi/d.r.abadi.html) (Department of Social Psychology, University of Amsterdam).
 
-For more information about the dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via email. 
+For further information about our dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via email. 
 
 ## Funding statement
 
