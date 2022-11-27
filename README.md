@@ -1,7 +1,7 @@
 # UsVsThem
-This is the repository for our publication [_Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions_](https://www.aclweb.org/anthology/2021.eacl-main.165/), which was recently published and presented at the EACL 2021 conference. Our Reddit dataset is made publicly available for the research community to be used. As a common courtesy your citation is very appreciated:
+This is the repository for our publication [_Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions_](http://dx.doi.org/10.18653/v1/2021.eacl-main.165), which was recently published and presented at the EACL 2021 conference. Our Reddit dataset is made publicly available for the research community to be used. As a common courtesy your citation is very appreciated:
 
-Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In _Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume_ (pp. 1921–1945). https://www.aclweb.org/anthology/2021.eacl-main.165/
+Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In _Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume_ (pp. 1921–1945). http://dx.doi.org/10.18653/v1/2021.eacl-main.165
 
     @inproceedings{huguet-cabot-etal-2021-us,
     title = "Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions",
@@ -14,7 +14,7 @@ Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us 
     year = "2021",
     address = "Online",
     publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/2021.eacl-main.165",
+    url = "http://dx.doi.org/10.18653/v1/2021.eacl-main.165",
     pages = "1921--1945"
     }
 
@@ -30,9 +30,9 @@ The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task)
 
 ## Data
 
-To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with the Reddit comment body and the labels. 
+The public version of our Reddit dataset is available on request only. For this purpose, please contact [Pere-Lluis Huguet Cabot] (https://littlepea13.github.io) (Sapienza University of Rome).
 
-The public version of our Reddit dataset is available on request only. For this purpose, please contact [David Abadi](https://www.uva.nl/en/profile/a/b/d.r.abadi/d.r.abadi.html) (Department of Social Psychology, University of Amsterdam).
+To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with the Reddit comment body and the labels. 
 
 For further information about our dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via email. 
 
