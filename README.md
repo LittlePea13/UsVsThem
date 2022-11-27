@@ -30,7 +30,7 @@ The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task)
 
 ## Data
 
-The public version of our Reddit dataset is available on request only. For this purpose, please contact [Pere-Lluis Huguet Cabot] (https://littlepea13.github.io) (Sapienza University of Rome).
+The public version of our Reddit dataset is available on request only. For this purpose, please contact [Pere-Lluis Huguet Cabot](https://littlepea13.github.io) (Sapienza University of Rome).
 
 To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with the Reddit comment body and the labels. 
 
