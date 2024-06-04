@@ -1,4 +1,5 @@
 # UsVsThem Reddit dataset (Populist Attitudes, Media Bias, Basic Emotions, Social Identity)
+
 This is the repository for our publication [_Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions_](http://dx.doi.org/10.18653/v1/2021.eacl-main.165), which was recently published and presented at the EACL 2021 conference. Our Reddit dataset is made publicly available for the research community to be used. As a common courtesy the citation of our paper is very appreciated (CC BY-NC 4.0 Licence):
 
 Huguet-Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In _Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume_ (pp. 1921–1945). http://dx.doi.org/10.18653/v1/2021.eacl-main.165
@@ -36,7 +37,7 @@ To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with t
 
 For further information about our dataset or any original data, such as Reddit metadata or the news articles that prompted the comments, please contact us via email. 
 
-## CC BY-NC 4.0 Licence:
+## CC BY-NC 4.0 Licence
 
 This license enables reusers to distribute, remix, adapt, and build upon the material in any medium or format for noncommercial purposes only, and only so long as attribution is given to the creator. CC BY-NC includes the following elements:
 BY: credit must be given to the creator.
