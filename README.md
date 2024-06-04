@@ -31,7 +31,7 @@ The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task)
 
 ## Data
 
-***Update June 2024** The public version of our Reddit dataset is now available via figshare: https://figshare.com/s/235393756ee3d0160b16
+***Update June 2024*** The public version of our Reddit dataset is now available via figshare: https://figshare.com/s/235393756ee3d0160b16
 
 To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with the Reddit comment body and the labels. 
 
