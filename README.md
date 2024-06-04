@@ -1,11 +1,11 @@
 # UsVsThem
 This is the repository for our publication [_Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions_](http://dx.doi.org/10.18653/v1/2021.eacl-main.165), which was recently published and presented at the EACL 2021 conference. Our Reddit dataset is made publicly available for the research community to be used. As a common courtesy your citation is very appreciated:
 
-Huguet Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In _Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume_ (pp. 1921–1945). http://dx.doi.org/10.18653/v1/2021.eacl-main.165
+Huguet-Cabot, P. L. H., Abadi, D., Fischer, A., & Shutova, E. (2021, April). Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions. In _Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume_ (pp. 1921–1945). http://dx.doi.org/10.18653/v1/2021.eacl-main.165
 
     @inproceedings{huguet-cabot-etal-2021-us,
     title = "Us vs. Them: A Dataset of Populist Attitudes, News Bias and Emotions",
-    author = "Huguet Cabot, Pere-Llu{\'\i}s  and
+    author = "Huguet-Cabot, Pere-Llu{\'\i}s  and
       Abadi, David  and
       Fischer, Agneta  and
       Shutova, Ekaterina",
@@ -30,7 +30,7 @@ The branch [three_task](https://github.com/LittlePea13/UsVsThem/tree/three_task)
 
 ## Data
 
-The public version of our Reddit dataset is available on request only. For this purpose, please contact [Pere-Lluis Huguet Cabot](https://littlepea13.github.io) (Sapienza University of Rome).
+***Update June 2024** The public version of our Reddit dataset is now available via figshare: https://figshare.com/s/235393756ee3d0160b16
 
 To comply with GDPR laws we provide our _Us Vs. Them_ dataset exclusively with the Reddit comment body and the labels. 
 
